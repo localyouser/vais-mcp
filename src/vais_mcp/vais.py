@@ -16,28 +16,36 @@ class VaisError(Exception):
     pass
 
 
-def _get_contents(response: pagers.SearchPager) -> list[dict]:
-    contents = []
+from google.protobuf.json_format import MessageToDict
+
+def _get_contents(response) -> list[dict]:
+    contents =[]
 
     for r in response.results:
+        # ProtobufをDictに変換
         r_dct = MessageToDict(r._pb)
-        title = (
-            r_dct.get("document", {})
-            .get("derivedStructData", {})
-            .get("title", "Unknown source")
-        )
-        segments = (
-            r_dct.get("document", {})
-            .get("derivedStructData", {})
-            .get("extractive_segments", [])
-        )
 
-        for segment in segments:
-            content = segment.get("content", "")
-            contents.append({"title": title, "content": content})
+        # derivedStructData を取得
+        derived_data = r_dct.get("document", {}).get("derivedStructData", {})
+
+        # タイトルを取得
+        title = derived_data.get("title", "Unknown source")
+        link = derived_data.get("link", "")
+
+        # ウェブサイト検索結果のスニペット（要約）を取得
+        snippets = derived_data.get("snippets",[])
+
+        for snippet_obj in snippets:
+            # "snippet" キーからテキストを取得（HTMLタグ付きが良ければ "htmlSnippet" を指定）
+            content = snippet_obj.get("snippet", "")
+            if content:
+                contents.append({
+                    "title": title,
+                    "link": link,
+                    "content": content
+                })
 
     return contents
-
 
 def call_vais(
     search_query: str,
@@ -71,12 +79,20 @@ def call_vais(
 
     serving_config = f"projects/{google_cloud_project_id}/locations/{vais_location}/collections/default_collection/engines/{vais_engine_id}/servingConfigs/default_config"
 
+#    content_search_spec = discoveryengine.SearchRequest.ContentSearchSpec(
+#        extractive_content_spec=discoveryengine.SearchRequest.ContentSearchSpec.ExtractiveContentSpec(
+#            max_extractive_segment_count=max_extractive_segment_count
+#        )
+#    )
+
     content_search_spec = discoveryengine.SearchRequest.ContentSearchSpec(
+        snippet_spec=discoveryengine.SearchRequest.ContentSearchSpec.SnippetSpec(
+            return_snippet=True
+        ),
         extractive_content_spec=discoveryengine.SearchRequest.ContentSearchSpec.ExtractiveContentSpec(
-            max_extractive_segment_count=max_extractive_segment_count
+            max_extractive_answer_count=1
         )
     )
-
     try:
         request = discoveryengine.SearchRequest(
             serving_config=serving_config,
@@ -91,6 +107,9 @@ def call_vais(
         response = client.search(request)
         contents = _get_contents(response)
         logger.info(f"Successfully retrieved {len(contents)} results from VAIS.")
+        #print(request)
+        #print(response)
+        print(contents)
         return contents
 
     except Exception as e:

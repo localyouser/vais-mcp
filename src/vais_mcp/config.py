@@ -17,6 +17,11 @@ class Settings(BaseSettings):
 
     LOG_LEVEL: str = "WARNING"
 
+    # --- 追加: SSE / サーバー設定 ---
+    MCP_TRANSPORT: str = "stdio"
+    MCP_HOST: str = "0.0.0.0"
+    MCP_PORT: int = 8000
+
     model_config = SettingsConfigDict(extra="ignore", env_ignore_empty=True)
 
 

@@ -12,13 +12,13 @@ ENV UV_FROZEN=true
 
 COPY pyproject.toml uv.lock ./
 
-RUN --mount=type=cache,target=/root/.cache/uv \
-    uv sync --frozen --no-install-project --no-dev --no-editable
+# BuildKitのキャッシュマウント（--mount=type=cache）を削除し、通常のRUNに変更
+RUN uv sync --frozen --no-install-project --no-dev --no-editable
 
 COPY . /app
 
-RUN --mount=type=cache,target=/root/.cache/uv \
-    uv sync --frozen --no-dev --no-editable
+# こちらも同様にキャッシュマウントを削除
+RUN uv sync --frozen --no-dev --no-editable
 
 FROM python:3.13-slim
 
@@ -37,7 +37,14 @@ ENV PATH="/app/.venv/bin:$PATH"
 ENV UV_CACHE_DIR=/app/.uv_cache
 RUN mkdir -p /app/.uv_cache && chown -R app:app /app/.uv_cache
 
+# --- SSE サーバーの設定 ---
+ENV MCP_TRANSPORT=sse
+ENV MCP_HOST=0.0.0.0
+ENV MCP_PORT=8000
+EXPOSE 8000
+# -------------------------
+
 USER app
 
 ENTRYPOINT ["uv", "run", "vais-mcp"]
-CMD []
+CMD

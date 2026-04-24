@@ -1,4 +1,5 @@
 import sys
+import asyncio
 
 from fastmcp import FastMCP
 from loguru import logger
@@ -29,7 +30,10 @@ async def search_vais(
         return {"response": "No search query provided"}
 
     try:
-        response_data = call_vais(
+        # 複数ユーザの同時リクエスト時にイベントループがブロックされないように、
+        # 同期関数である call_vais を別スレッドにオフロードして実行します。
+        response_data = await asyncio.to_thread(
+            call_vais,
             search_query=search_query,
             google_cloud_project_id=settings.GOOGLE_CLOUD_PROJECT_ID,
             impersonate_service_account=settings.IMPERSONATE_SERVICE_ACCOUNT,
@@ -47,7 +51,12 @@ async def search_vais(
 
 def main():
     logger.info("Starting FastMCP server.")
-    mcp.run()
+    if settings.MCP_TRANSPORT == "sse":
+        logger.info(f"Starting in SSE mode on {settings.MCP_HOST}:{settings.MCP_PORT}")
+        mcp.run(transport="sse", host=settings.MCP_HOST, port=settings.MCP_PORT)
+    else:
+        logger.info("Starting in stdio mode")
+        mcp.run()
 
 
 if __name__ == "__main__":

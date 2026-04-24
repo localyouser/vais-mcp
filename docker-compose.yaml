@@ -1,0 +1,21 @@
+services:
+  vais-mcp:
+    image: vais-mcp:0.01
+    ports:
+      - "8000:8000"
+    restart: always
+    volumes:
+      - <サービスアカウント認証鍵のJSONファイル>:/app/secrets/sa-key.json:ro
+    environment:
+      MCP_TRANSPORT: sse
+      MCP_HOST: 0.0.0.0
+      MCP_PORT: 8000
+      LOG_LEVEL: INFO
+      USE_MOUNTED_SA_KEY: true
+      CONTAINER_SA_KEY_PATH: /app/secrets/sa-key.json
+      GOOGLE_CLOUD_PROJECT_ID: <your-project-id>
+      VAIS_ENGINE_ID: <search-engine-id>
+      VAIS_LOCATION: global
+      PAGE_SIZE: "10"
+      MAX_EXTRACTIVE_SEGMENT_COUNT: "5"
+      IMPERSONATE_SERVICE_ACCOUNT: ""
