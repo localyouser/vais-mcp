@@ -20,7 +20,11 @@ mcp = FastMCP(
 )
 
 
-@mcp.tool()
+@mcp.tool(
+        name="search_vais",
+        description="ユーザーの質問に関連する情報を、プライベートデータストアから取得するためのツールです。",
+        tags={"public","search"},
+        )
 async def search_vais(
     search_query: str,
 ) -> dict:
