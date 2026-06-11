@@ -1,6 +1,6 @@
 # MCP Server for Vertex AI Search SSE版
 
-Difyでの実行等を想定し、Fork元ではStdio形式で動作したプログラムをSSEで動かせるように改修したものです。
+Difyでの実行等を想定し、Fork元ではStdio形式で動作したプログラム (https://github.com/ShintaroMorimoto/vais-mcp) をSSEで動かせるように改修したものです。
 
 - docker-compose.yamlを追加し、docker composeで動かせるようにしました。
 - ツール名・補足をツール自体につけ、LLMがツールについて理解しやすくしています。
