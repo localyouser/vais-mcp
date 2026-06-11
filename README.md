@@ -1,3 +1,16 @@
+# MCP Server for Vertex AI Search SSE版
+
+Difyでの実行等を想定し、Fork元ではStdio形式で動作したプログラムをSSEで動かせるように改修したものです。
+
+- docker-compose.yamlを追加し、docker composeで動かせるようにしました。
+- ツール名・補足をツール自体につけ、LLMがツールについて理解しやすくしています。
+
+詳細については、[私のブログ](https://www.bluecore.net/archives/102) を参考にしてください。その他AI関連のネタをぼちぼち書いてます。
+
+以下、Fork元文書を引用しています。
+
+-----
+
 # MCP Server for Vertex AI Search
 
 MCP server to search private data in Vertex AI Search.
